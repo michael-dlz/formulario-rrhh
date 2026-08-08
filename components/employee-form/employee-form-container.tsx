@@ -33,6 +33,8 @@ import {
   Tick02Icon,
   AlertCircleIcon,
   Building01Icon,
+  ViewIcon,
+  LockIcon,
 } from "@hugeicons/core-free-icons";
 
 interface TenantData {
@@ -56,6 +58,7 @@ const DEBUG_MODE = false;
 
 export function EmployeeFormContainer({ tenant }: EmployeeFormContainerProps) {
   const [currentStep, setCurrentStep] = useState<number>(1);
+  const [isReviewMode, setIsReviewMode] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<{ open: boolean; employeeId?: string }>({
@@ -317,6 +320,10 @@ export function EmployeeFormContainer({ tenant }: EmployeeFormContainerProps) {
         break;
     }
 
+    if (isReviewMode) {
+      return true;
+    }
+
     if (fieldKeys.length > 0) {
       const isValid = await form.trigger(fieldKeys as any);
       if (!isValid) {
@@ -391,7 +398,17 @@ export function EmployeeFormContainer({ tenant }: EmployeeFormContainerProps) {
             <CardDescription>
               {tenant.description || "Formulario de Registro de Información del Trabajador"}
             </CardDescription>
-            <CardAction>
+            <CardAction className="flex items-center space-x-2">
+              <Button
+                type="button"
+                variant={isReviewMode ? "default" : "outline"}
+                size="sm"
+                onClick={() => setIsReviewMode(!isReviewMode)}
+                title="Modo Revisión: Permite avanzar libremente entre secciones para inspeccionar los campos"
+              >
+                <HugeiconsIcon icon={isReviewMode ? ViewIcon : LockIcon} />
+                {isReviewMode ? "Navegación Libre (Modo Revisión)" : "Validación Estricta Activa"}
+              </Button>
               <ThemeToggle />
             </CardAction>
           </CardHeader>
@@ -400,7 +417,7 @@ export function EmployeeFormContainer({ tenant }: EmployeeFormContainerProps) {
               currentStep={currentStep}
               totalSteps={10}
               onStepClick={handleGoToStep}
-              isDebug={DEBUG_MODE}
+              isDebug={isReviewMode}
             />
           </CardContent>
         </Card>
