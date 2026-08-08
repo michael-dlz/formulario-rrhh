@@ -1,0 +1,231 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum document_type {
+  DNI
+  CE
+  PASAPORTE
+}
+
+enum marital_status {
+  SOLTERO
+  CASADO
+  CONVIVIENTE
+  DIVORCIADO
+  VIUDO
+}
+
+enum employment_status {
+  ACTIVO
+  CESADO
+}
+
+enum contract_type {
+  INDETERMINADO
+  PLAZO_FIJO
+  PRAC_PRE
+  PRAC_PRO
+  LOCACION
+}
+
+enum pension_system {
+  AFP
+  ONP
+}
+
+enum currency {
+  PEN
+  USD
+}
+
+enum asset_status {
+  NUEVO
+  BUENO
+  REGULAR
+  MALO
+}
+
+enum uniform_type {
+  CASACA
+  PULLOVER
+  PANTALON
+  POLO
+  OTRO
+}
+
+enum employee_position {
+  CONSERJE
+  CONSERJE_DE_LIMPIEZA
+  OTRO
+}
+
+model tenant {
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  name          String
+  description   String?
+  logo_url      String?
+  primary_color String?
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  employees     employee[]
+}
+
+model employee {
+  id                   String                      @id @default(cuid())
+  tenant_id            String
+  first_name           String
+  last_name            String
+  document_type        document_type
+  document_number      String
+  birth_date           DateTime
+  address              String
+  district             String
+  phone                String
+  personal_email       String
+  corporate_email      String?
+  marital_status       marital_status
+  nationality          String                      @default("Peruana")
+  photo_url            String?
+  document_copy_url    String?
+  position             employee_position
+  area                 String
+  work_location        String
+  hire_date            DateTime
+  contract_type        contract_type
+  status               employment_status           @default(ACTIVO)
+  end_date             DateTime?
+  salary               Float
+  pension_system       pension_system
+  afp_name             String?
+  afp_code             String?
+  has_family_allowance Boolean                     @default(false)
+  observations         String?
+  created_at           DateTime                    @default(now())
+  updated_at           DateTime                    @updatedAt
+  tenant               tenant                      @relation(fields: [tenant_id], references: [id], onDelete: Cascade)
+  family_members       employee_family_member[]
+  emergency_contacts   employee_emergency_contact[]
+  bank_accounts        employee_bank_account[]
+  cts_account          employee_cts_account?
+  assets               employee_asset[]
+  uniforms             employee_uniform[]
+  documents            employee_document[]
+}
+
+model employee_family_member {
+  id              String        @id @default(cuid())
+  employee_id     String
+  full_name       String
+  relationship    String
+  document_type   document_type @default(DNI)
+  document_number String
+  birth_date      DateTime
+  is_dependent    Boolean       @default(true)
+  phone           String?
+  observations    String?
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
+  employee        employee      @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_emergency_contact {
+  id           String   @id @default(cuid())
+  employee_id  String
+  full_name    String
+  relationship String
+  phone        String
+  alt_phone    String?
+  address      String?
+  observations String?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  employee     employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_bank_account {
+  id             String   @id @default(cuid())
+  employee_id    String
+  bank           String
+  account_type   String
+  account_number String
+  cci            String
+  currency       currency @default(PEN)
+  account_holder String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  employee       employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_cts_account {
+  id              String    @id @default(cuid())
+  employee_id     String    @unique
+  has_cts_account Boolean   @default(false)
+  bank            String?
+  account_number  String?
+  cci             String?
+  currency        currency?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  employee        employee  @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_asset {
+  id            String       @id @default(cuid())
+  employee_id   String
+  asset_type    String
+  description   String
+  brand         String?
+  model         String?
+  serial_number String?
+  internal_code String?
+  status        asset_status @default(BUENO)
+  delivery_date DateTime
+  observations  String?
+  created_at    DateTime     @default(now())
+  updated_at    DateTime     @updatedAt
+  employee      employee     @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_uniform {
+  id           String            @id @default(cuid())
+  employee_id  String
+  uniform_type uniform_type
+  custom_type  String?
+  size         String
+  is_delivered Boolean           @default(true)
+  delivery_date DateTime?
+  quantity     Int               @default(1)
+  position     employee_position
+  observations String?
+  created_at   DateTime          @default(now())
+  updated_at   DateTime          @updatedAt
+  employee     employee          @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model employee_document {
+  id            String   @id @default(cuid())
+  employee_id   String
+  document_type String
+  file_name     String
+  file_url      String
+  upload_date   DateTime @default(now())
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  employee      employee @relation(fields: [employee_id], references: [id], onDelete: Cascade)
+}
+
+model admin_user {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password_hash String
+  name          String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+}
+
