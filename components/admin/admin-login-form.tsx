@@ -66,9 +66,9 @@ export function AdminLoginForm() {
                 id="email"
                 name="email"
                 type="text"
-                placeholder="4dm1n"
+                placeholder="Ingresa tu usuario o correo"
                 required
-                defaultValue="4dm1n"
+                autoComplete="username"
               />
             </Field>
 
@@ -78,9 +78,9 @@ export function AdminLoginForm() {
                 id="password"
                 name="password"
                 type="password"
-                placeholder="gv_4dm1n"
+                placeholder="••••••••"
                 required
-                defaultValue="gv_4dm1n"
+                autoComplete="current-password"
               />
             </Field>
 

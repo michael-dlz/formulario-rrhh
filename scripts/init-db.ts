@@ -5,9 +5,15 @@ import bcrypt from "bcryptjs";
 async function main() {
   console.log("Inicializando registros en la base de datos...");
 
-  // 1. Crear Administrador 4dm1n / gv_4dm1n
-  const adminUser = "4dm1n";
-  const adminPass = "gv_4dm1n";
+  // 1. Crear Administrador desde variables de entorno
+  const adminUser = process.env.ADMIN_USERNAME || "admin";
+  const adminPass = process.env.ADMIN_PASSWORD;
+
+  if (!adminPass) {
+    console.error("❌ ERROR: La variable de entorno ADMIN_PASSWORD no está definida.");
+    process.exit(1);
+  }
+
   const hashedPassword = await bcrypt.hash(adminPass, 12);
 
   const admin = await prisma.admin_user.upsert({
@@ -21,7 +27,7 @@ async function main() {
       name: "Administrador General",
     },
   });
-  console.log(`✅ Administrador asegurado en BD: ID=${admin.id}, User=${admin.email}`);
+  console.log(`✅ Administrador asegurado en BD: User=${admin.email}`);
 
   // 2. Crear Tenant LEGADO
   const tenantSlug = "legado";
@@ -38,11 +44,10 @@ async function main() {
       description: "Empresa Legado - Registro de Trabajadores",
     },
   });
-  console.log(`✅ Tenant asegurado en BD: ID=${tenant.id}, Name=${tenant.name}, Slug=${tenant.slug}`);
+  console.log(`✅ Tenant asegurado en BD: Name=${tenant.name}, Slug=${tenant.slug}`);
 }
 
-main()
-  .catch((e) => {
-    console.error("Error al inicializar la BD:", e);
-    process.exit(1);
-  });
+main().catch((e) => {
+  console.error("Error al inicializar la BD:", e);
+  process.exit(1);
+});
